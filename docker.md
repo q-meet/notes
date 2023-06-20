@@ -1,0 +1,163 @@
+# docker 基础记录
+
+## docker 搭建 nginx,php,mysql 环境
+
+```shell
+
+mac安装mysql扩展需要支持 v8版本
+
+
+# 启动mysql
+docker run --name mysql8.0 --env=MYSQL_ROOT_PASSWORD=root  --volume=/Users/qin/dev/mysql/8.0/conf:/etc/mysql/conf.d --volume=/Users/qin/dev/mysql/8.0/logs:/logs --volume=/Users/qin/dev/mysql/8.0/data:/var/lib/mysql --volume=/var/lib/mysql  -p 3307:3306 -d mysql:8.0.33
+
+
+# 启动php 5.6
+docker run --name php5.6 -v /Users/qin/dev/docker/php5.6/porject:/var/www/html -v /Users/qin/dev/docker/php5.6/conf:/usr/local/etc/php -v /Users/qin/dev/docker/php5.6/logs:/phplogs -d --link mysql8.0 php:5.6-fpm
+
+
+# 启动php8.1
+docker run --name php8.1 -v /Users/qin/dev/docker/php5.6/porject:/var/www/html -v /Users/qin/dev/docker/php8.1/conf:/usr/local/etc/php -v /Users/qin/dev/docker/php8.1/logs:/phplogs -d --link mysql8.0 php:8.1.18-fpm
+
+
+# 启动Nginx
+docker run --name nginx -p 81:80 -d -v /Users/qin/dev/docker/php5.6/porject:/var/www/html:ro -v /Users/qin/dev/docker/nginx/conf.d:/etc/nginx/conf.d:ro --link php5.6   --link php8.1  --link mysql8.0 nginx
+
+
+# 重启nginx 进入nginx容器重启
+service nginx reload
+
+# 连接名称使用 link名称 或者 host.docker.internal
+# 例如：mysql -h mysql8.0 -u root -p
+# 例如：mysql -h host.docker.internal -u root -p
+```
+
+相关配置demo
+
+```shell
+# nginx config
+
+server {
+    listen  80;
+    server_name localhost;
+    set $root /var/www/html/localhost;
+
+    #access_log  /tmp/nginx/logs/localhost.net.access.log main;
+    #error_log  /tmp/nginx/logs/localhost.net.error.log notice;
+
+    location ~ .*.(gif|jpg|jpeg|bmp|png|ico|txt|js|css)$ {
+        root $root;
+    }
+
+    location / {
+        root $root;
+        index  index.php index.html index.htm;
+        if ( -f $request_filename) {
+            break;
+        }
+        if (!-e $request_filename) {
+            rewrite ^(.*)$ /index.php/$1 last;
+            break;
+        }
+    }
+
+    location ~ .php(.*)$ {
+        root $root;
+        set $script $uri;
+        set $path_info "";
+        if ($uri ~ "^(.+.php)(/.+)") {
+            set $script $1;
+            set $path_info $2;
+        }
+        fastcgi_pass     php5.6:9000;
+        #fastcgi_index index.php;
+        fastcgi_index    index.php?IF_REWRITE=1;
+        fastcgi_param    PATH_INFO    $path_info;
+        fastcgi_param    SCRIPT_FILENAME    $document_root$fastcgi_script_name;
+        fastcgi_param    SCRIPT_NAME    $script;
+        include          fastcgi_params;
+
+    }
+
+    location ~ /.ht {
+        deny  all;
+    }
+    location ~ /.svn {
+        deny  all;
+    }
+    location ~ /.git/ {
+        deny  all;
+    }
+    location ~ /Logs/ {
+         deny  all;
+    }
+    location ~ /Logs/.* {
+    }
+    location ~ /Logs/.* {
+        deny  all;
+    }
+    location ~ .*.(sql|tar.gz|zip|gz|tar|rariso|rpm|apk|bak)$ {
+        deny  all;
+    }
+
+}
+```
+
+安装php扩展
+
+```shell
+cd /usr/local/bin
+docker-php-ext-install mysqli mysql pdo_mysql
+
+# php.ini 配置放开 位置 在本机配置文件中创建 conf.d文件夹以及任意名称.ini文件
+extension = pdo_mysql.so
+cgi.force_redirect = 0
+extension = mysqli.so
+extension = mysql.so
+```
+
+连接host说明
+
+```shell
+For all platforms
+Docker v 20.10及以上版本（自2020年12月14日）。
+
+使用你的内部IP地址或连接到特殊的DNS名称host.docker.internal，这将解析到主机使用的内部IP地址。
+
+On Linux, using the Docker命令，在你的Docker命令中添加--add-host=host.docker.internal:host-gateway以启用该功能。
+
+要在下列情况下启用该功能Docker Compose在Linux上，在容器定义中添加以下几行。
+
+extra_hosts:
+    - "host.docker.internal:host-gateway"
+For older macOS and Windows versions of Docker
+Docker v 18.03及以上版本（自2018年3月21日）。
+
+使用你的内部IP地址或连接到特殊的DNS名称host.docker.internal，这将解析到主机使用的内部IP地址。
+
+Linux support pending https://github.com/docker/for-linux/issues/264
+
+For older macOS versions of Docker
+Docker for Mac v 17.12 to v 18.02
+
+同上，但用docker.for.mac.host.internal代替。
+
+Docker for Mac v 17.06 to v 17.11
+
+同上，但用docker.for.mac.localhost代替。
+
+Docker for Mac 17.05及以下版本
+
+要从docker容器中访问主机，你必须在网络接口上附加一个IP别名。你可以绑定任何你想要的IP，只要确保你不把它用在其他地方。
+
+sudo ifconfig lo0 alias 123.123.123.123/24
+
+然后确保你的服务器正在监听上面提到的IP或者0.0.0.0。如果它监听的是localhost 127.0.0.1，它将不接受连接。
+
+然后，只要将你的docker容器指向这个IP，你就可以访问主机了。
+
+为了测试，你可以在容器内运行类似curl -X GET 123.123.123.123:3000的东西。
+
+该别名将在每次重启时重置，所以如果有必要，可以创建一个启动脚本。
+
+解决方案和更多文件在这里。https://docs.docker.com/docker-for-mac/networking/#use-cases-and-workarounds
+```
