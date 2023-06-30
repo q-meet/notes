@@ -18,6 +18,9 @@ docker run --name php5.6 -v /Users/qin/dev/docker/php5.6/porject:/var/www/html -
 # 启动php8.1
 docker run --name php8.1 -v /Users/qin/dev/docker/php5.6/porject:/var/www/html -v /Users/qin/dev/docker/php8.1/conf:/usr/local/etc/php -v /Users/qin/dev/docker/php8.1/logs:/phplogs -d --link mysql8.0 php:8.1.18-fpm
 
+说明：
+配置文件创建在 conf.d 下
+/Users/qin/dev/docker/php8.1/conf/conf.d
 
 # 启动Nginx
 docker run --name nginx -p 81:80 -d -v /Users/qin/dev/docker/php5.6/porject:/var/www/html:ro -v /Users/qin/dev/docker/nginx/conf.d:/etc/nginx/conf.d:ro --link php5.6   --link php8.1  --link mysql8.0 nginx
