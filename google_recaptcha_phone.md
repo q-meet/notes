@@ -6,6 +6,8 @@
 
 下载谷歌验证类库文件放到项目合适位置(我这边放在项目Vender下面)
 
+[https://github.com/PHPGangsta/GoogleAuthenticator](https://github.com/PHPGangsta/GoogleAuthenticator)
+
 PHP代码示例:
 
 ```php
