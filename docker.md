@@ -30,6 +30,9 @@ docker run --name nginx -p 81:80 -d -v /Users/qin/dev/docker/php5.6/porject:/var
 docker run --name nginx_all --add-host test.pay.com:172.20.10.4 -p 8000:80 -p 8001:8001 -p 8002:8002  -p 8003:8003  -d -v /Users/qin/dev/docker/php5.6/porject:/var/www/html:ro -v /Users/qin/dev/docker/nginx/conf.d:/etc/nginx/conf.d:ro --link php5.6   --link php8.1  --link mysql8.0  --link mysql3306 nginx
 
 
+# 启动Nginx 配置虚拟域名 本地host配置 test.pay.com:127.0.0.1  启动容器时添加
+docker run --name nginx_all2 --add-host test.pay.com:127.0.0.1 -p 8000:80 -p 8001:8001 -p 8002:8002  -p 8003:8003  -d -v /Users/qin/dev/docker/php5.6/porject:/var/www/html:ro -v /Users/qin/dev/docker/nginx/conf.d:/etc/nginx/conf.d:ro --link php5.6   --link php8.1  --link mysql8.0  --link mysql3306 nginx
+
 
 # 启动Nginx 映射本地host
 docker run --name nginx_all_host --network=host -p 8000:80 -p 8001:8001 -p 8002:8002  -p 8003:8003  -d -v /Users/qin/dev/docker/php5.6/porject:/var/www/html:ro -v /Users/qin/dev/docker/nginx/conf.d:/etc/nginx/conf.d:ro --link php5.6   --link php8.1  --link mysql8.0  --link mysql3306 nginx
