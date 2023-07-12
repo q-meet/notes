@@ -56,7 +56,8 @@ select a.* from tb a inner join (select name , max(val) val from tb group by nam
 ```
 
 - 方法五：
-```
+
+```sql
 select a.* from tb a where 1 > (select count(*) from tb where name = a.name and val > a.val ) order by a.name
 ```
 
