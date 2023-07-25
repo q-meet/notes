@@ -1,9 +1,92 @@
 # docker 基础记录
 
+## docker 构建node_base 镜像 推送远程仓库
+
+nodejs 应用打包docker创建精简1G多镜像
+
+刚开始使用docker打包nodejs应用时，每次生成的镜像文件大小都超过1个G，不仅推送慢，而且占用系统空间。
+
+主要原因
+拉取最新node 镜像，发现node镜像有943MB。
+
+```shell
+docker pull node:latest
+docker images
+#node 943MB
+```
+
+解决办法
+创建一个基础镜像node_base
+
+```xshell
+docker pull alpine:latest
+# alpine精简Linux 5.6MB
+```
+
+所以主要目标就是精简这个基础镜像
+
+Dockerfile如下
+
+```dockerfile
+FROM alpine:latest
+# 安装nodejs npm
+RUN apk add --no-cache --update nodejs npm
+```
+
+创建基础镜像node_base
+构建镜像
+
+```shell
+# 构建镜像 包含用户名
+sudo docker build -t meetdocker2020/node_base:latest .
+# node_base 54M 54MB 相比于943MB。效果显而易见。
+
+docker login
+docker tag meetdocker2020/node_base:latest  meetdocker2020/node_base:v1.0 
+docker push meetdocker2020/node_base:v1.0 
+```
+
+使用基础镜像打包应用
+nodejs应用的Dockerfile
+
+```dockerfile
+# 这里会形成第一个层级（layers）
+FROM node_base:latest
+
+WORKDIR /app
+COPY package.json /app/
+
+# 这里会形成第二个层级（layers），如果package.json依赖文件不变，就会使用缓存的node_modules
+RUN npm install
+
+COPY . /app/
+
+# 这里会形成第三个层级（layers）
+RUN npm run build
+CMD ["npm","run","start"]
+```
+
+设置需要忽略的文件夹（不复制打包），.dockerignore文件如下
+
+```file
+node_modules
+.git
+.vscode
+.nuxt
+.next
+```
+
+打包
+
+```shell
+docker build -t your_project_name:0.1 .
+```
+
+[参考来源](https://zhuanlan.zhihu.com/p/130738206 "nodejs 应用打包docker创建精简1G多镜像")
+
 ## docker 搭建 nginx,php,mysql 环境
 
 ```shell
-
 mac安装mysql扩展需要支持 v8版本
 
 
