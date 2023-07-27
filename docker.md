@@ -84,6 +84,68 @@ docker build -t your_project_name:0.1 .
 
 [参考来源](https://zhuanlan.zhihu.com/p/130738206 "nodejs 应用打包docker创建精简1G多镜像")
 
+### 构建音乐服务
+
+docker-compose file
+
+```docker-compose
+version: "3"
+services:
+  service_redis:
+    # 被关闭重启
+    restart: always
+    # 可以不映射
+    # ports:
+    #  - "6379:6379"
+    image: redis
+    container_name: redisServer
+    environment:
+      - TZ=Asia/Shanghai
+    command: redis-server
+    volumes:
+      - ~\data:/data  #redis数据挂载到本地
+  service_musicApi:
+    image: meetdocker2020/music-api:v1.0
+    environment:
+      - QQ=1040927107 #qq号
+    container_name: musicApi
+    ports:
+      - "13000:3000"
+      - "13300:3300"
+      - "13400:3400"
+      - "18081:8081"
+    restart: always
+  service_serveHouses:
+    container_name: serveHouses
+    image: meetdocker2020/music:v1.0
+    environment:
+      - MusicApi=http://musicApi  #必须与service_musicApi的container_name一致
+      - APIUSER=admin  #api认证接口用户名
+      - APIPWD=xx  #api认证接口密码
+      - ServerJUrl=https://sc.ftqq.com/xxx.send #server酱消息接口，用户@管理员时会通知微信
+      - MiniId=yyy
+      - MiniSecrect=xx
+      - RoleRootPassword=654321
+      - WyAccount=meet_happy@163.com
+      - WyPassword=meet163music2023
+      - PlaylistSize=23
+      - ForeverlistSize=66
+      - ReTryCount=2
+      - RedisHost=redisServer
+    ports:
+      - "18080:8888"
+    depends_on:
+      - service_redis
+      - service_musicApi
+    restart: always
+```
+
+执行命令
+
+```shell
+docker-compose up -d
+```
+
 ## docker 搭建 nginx,php,mysql 环境
 
 ```shell
