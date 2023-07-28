@@ -1,5 +1,52 @@
 # docker 基础记录
 
+## 连接host说明
+
+```shell
+For all platforms
+Docker v 20.10及以上版本（自2020年12月14日）。
+
+使用你的内部IP地址或连接到特殊的DNS名称host.docker.internal，这将解析到主机使用的内部IP地址。
+
+On Linux, using the Docker命令，在你的Docker命令中添加--add-host=host.docker.internal:host-gateway以启用该功能。
+
+要在下列情况下启用该功能Docker Compose在Linux上，在容器定义中添加以下几行。
+
+extra_hosts:
+    - "host.docker.internal:host-gateway"
+For older macOS and Windows versions of Docker
+Docker v 18.03及以上版本（自2018年3月21日）。
+
+使用你的内部IP地址或连接到特殊的DNS名称host.docker.internal，这将解析到主机使用的内部IP地址。
+
+Linux support pending https://github.com/docker/for-linux/issues/264
+
+For older macOS versions of Docker
+Docker for Mac v 17.12 to v 18.02
+
+同上，但用docker.for.mac.host.internal代替。
+
+Docker for Mac v 17.06 to v 17.11
+
+同上，但用docker.for.mac.localhost代替。
+
+Docker for Mac 17.05及以下版本
+
+要从docker容器中访问主机，你必须在网络接口上附加一个IP别名。你可以绑定任何你想要的IP，只要确保你不把它用在其他地方。
+
+sudo ifconfig lo0 alias 123.123.123.123/24
+
+然后确保你的服务器正在监听上面提到的IP或者0.0.0.0。如果它监听的是localhost 127.0.0.1，它将不接受连接。
+
+然后，只要将你的docker容器指向这个IP，你就可以访问主机了。
+
+为了测试，你可以在容器内运行类似curl -X GET 123.123.123.123:3000的东西。
+
+该别名将在每次重启时重置，所以如果有必要，可以创建一个启动脚本。
+
+解决方案和更多文件在这里。https://docs.docker.com/docker-for-mac/networking/#use-cases-and-workarounds
+```
+
 ## docker 构建node_base 镜像 推送远程仓库
 
 nodejs 应用打包docker创建精简1G多镜像
@@ -274,51 +321,4 @@ extension = pdo_mysql.so
 cgi.force_redirect = 0
 extension = mysqli.so
 extension = mysql.so
-```
-
-连接host说明
-
-```shell
-For all platforms
-Docker v 20.10及以上版本（自2020年12月14日）。
-
-使用你的内部IP地址或连接到特殊的DNS名称host.docker.internal，这将解析到主机使用的内部IP地址。
-
-On Linux, using the Docker命令，在你的Docker命令中添加--add-host=host.docker.internal:host-gateway以启用该功能。
-
-要在下列情况下启用该功能Docker Compose在Linux上，在容器定义中添加以下几行。
-
-extra_hosts:
-    - "host.docker.internal:host-gateway"
-For older macOS and Windows versions of Docker
-Docker v 18.03及以上版本（自2018年3月21日）。
-
-使用你的内部IP地址或连接到特殊的DNS名称host.docker.internal，这将解析到主机使用的内部IP地址。
-
-Linux support pending https://github.com/docker/for-linux/issues/264
-
-For older macOS versions of Docker
-Docker for Mac v 17.12 to v 18.02
-
-同上，但用docker.for.mac.host.internal代替。
-
-Docker for Mac v 17.06 to v 17.11
-
-同上，但用docker.for.mac.localhost代替。
-
-Docker for Mac 17.05及以下版本
-
-要从docker容器中访问主机，你必须在网络接口上附加一个IP别名。你可以绑定任何你想要的IP，只要确保你不把它用在其他地方。
-
-sudo ifconfig lo0 alias 123.123.123.123/24
-
-然后确保你的服务器正在监听上面提到的IP或者0.0.0.0。如果它监听的是localhost 127.0.0.1，它将不接受连接。
-
-然后，只要将你的docker容器指向这个IP，你就可以访问主机了。
-
-为了测试，你可以在容器内运行类似curl -X GET 123.123.123.123:3000的东西。
-
-该别名将在每次重启时重置，所以如果有必要，可以创建一个启动脚本。
-
-解决方案和更多文件在这里。https://docs.docker.com/docker-for-mac/networking/#use-cases-and-workarounds
 ```
