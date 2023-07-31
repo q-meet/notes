@@ -1,5 +1,19 @@
 # docker 基础记录
 
+## docker pull镜像 指定系统
+
+使用下面的命令重启获取镜像
+
+```shell
+docker pull --platform=arm64 nginx:latest
+```
+
+指定哈希版本
+
+```shell
+docker pull prom/mysqld-exporter:latest@sha256:c26d0213b4862eba03d077ea1928f9480d61bd8c7448b3a4c3015e1674cf32fd
+```
+
 ## 连接host说明
 
 ```shell
