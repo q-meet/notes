@@ -1,0 +1,4 @@
+Host *
+IdentityFile ～/.ssh/id_rsa
+HostKeyAlgorithms ssh-rsa
+PubkeyAcceptedKeyTypes ssh-rsa
