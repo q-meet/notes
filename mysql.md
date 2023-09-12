@@ -1,5 +1,34 @@
 # mysql 日记
 
+## MySql 分组后获取距离时间最近的第一条数据
+
+按照user_id 分组，取每组中update_time 最大的那一条记录。
+
+本质有两种方法，目前推荐采用第二种
+
+// 低版本5.7以下可以生效
+
+```sql
+SELECT *
+FROM  (select * from tabletable where xxx order by update_time DESC) b 
+GROUP BY b.user_id;
+```
+
+// 所有版本均适用
+
+```sql
+SELECT t.*
+FROM (
+      SELECT user_id, MAX(update_time) as update_time
+      FROM tabletable
+      WHERE xxx
+      GROUP BY user_id
+) r
+INNER JOIN tabletable t
+ON t.user_id = r.user_id AND t.update_time = r.update_time
+GROUP BY t.user_id;
+```
+
 ## mysql分组取最大(最小、最新、前N条)条记录
 
 在数据库开发过程中，我们要为每种类型的数据取出前几条记录，或者是取最新、最小、最大等等，这个该如何实现呢，本文章向大家介绍如何实现mysql分组取最大(最小、最新、前N条)条记录。需要的可以参考一下。
