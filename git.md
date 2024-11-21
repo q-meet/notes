@@ -10,3 +10,10 @@ IdentityFile ～/.ssh/id_rsa
 HostKeyAlgorithms ssh-rsa
 PubkeyAcceptedKeyTypes ssh-rsa
 ```
+
+git 合并 单提交
+
+```cmd
+git cherry-pick commit-id
+```
+
