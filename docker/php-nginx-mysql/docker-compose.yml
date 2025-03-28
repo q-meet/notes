@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  nginx:
+    image: nginx:latest
+    container_name: nginx_server
+    ports:  
+      - "80:80"
+    volumes:
+      - ./nginx/:/etc/nginx/conf.d/
+      - ./:/var/www/html
+    depends_on:
+      - php
+    networks:
+      - app_network
+
+  php:
+    build: ./php
+    container_name: php_fpm
+    volumes:
+      - ./:/var/www/html
+      - ./php/conf.d/yaconf.ini:/usr/local/etc/php/conf.d/yaconf.ini
+      - ./php/yaconf/env.ini:/usr/local/etc/php/yaconf/env.ini
+    networks:
+      - app_network
+
+  mysql:
+    image: mysql:8.0
+    container_name: mysql_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: test_db
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    ports:
+      - "3306:3306"
+    networks:
+      - app_network
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  # beanstalkd:
+  #   image: schickling/beanstalkd:latest
+  #   container_name: beanstalkd
+  #   ports:
+  #     - "11300:11300"
+  #   networks:
+  #     - app_network
+
+networks:
+  app_network:
+
+volumes:
+  mysql_data:

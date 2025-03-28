@@ -1,0 +1,27 @@
+FROM php:7.4-fpm
+
+# 安装必要的系统依赖和 PHP 扩展
+RUN apt-get update && apt-get install -y \
+  curl \
+  libpng-dev \
+  libjpeg-dev \
+  libzip-dev \
+  libgmp-dev \
+  git \
+  unzip\
+  libcurl4-openssl-dev \
+  libfreetype6-dev \
+  && apt-get clean \
+  && docker-php-ext-install zip bcmath curl sockets \
+  && docker-php-ext-configure gd --with-freetype --with-jpeg \
+  && docker-php-ext-install gd pdo mysqli pdo_mysql \
+  && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
+  && pecl install redis && docker-php-ext-enable redis \
+  && pecl install yaconf && docker-php-ext-enable yaconf \
+  && echo "[yaconf]\nextension=yaconf.so\nyaconf.directory=/var/www/html/config" > /usr/local/etc/php/conf.d/yaconf.ini
+
+# 设置工作目录
+WORKDIR /var/www/html
+
+# docker-compose build php 
+# docker-compose up -d
